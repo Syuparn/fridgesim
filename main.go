@@ -1,7 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"github.com/syuparn/fridgesim/adapter"
+)
 
 func main() {
-	fmt.Println("TODO: implement app!")
+	e := adapter.NewServer()
+
+	// Start server
+	e.Logger.Fatal(e.Start(":8080"))
 }
