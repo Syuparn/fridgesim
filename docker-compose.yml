@@ -1,0 +1,16 @@
+version: '3'
+services:
+  fridgesim:
+    build: .
+    tty: true
+    ports:
+      - 8080:8080
+  db:
+    image: postgres:14
+    tty: true
+    volumes:
+      - db_volume:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=pass
+volumes:
+  db_volume:
