@@ -14,6 +14,7 @@ func NewServer(ctrl *Controller) *echo.Echo {
 	e.Use(middleware.Recover())
 
 	// Routes
+	e.POST("/ingredients", ctrl.CreateIngredient)
 	e.GET("/ingredients", ctrl.ListIngredients)
 
 	return e
