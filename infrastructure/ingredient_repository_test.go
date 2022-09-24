@@ -58,7 +58,7 @@ func TestIngredientRepositoryList(t *testing.T) {
 			db, mock, teardown := prepareDB(t)
 			defer teardown()
 
-			r, err := NewIngredientRepository(db)
+			r, err := NewIngredientRepository(NewClient(db))
 			if err != nil {
 				t.Fatal(err)
 			}

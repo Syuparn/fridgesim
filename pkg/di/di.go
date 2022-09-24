@@ -9,6 +9,7 @@ import (
 
 	"github.com/syuparn/fridgesim/adapter"
 	"github.com/syuparn/fridgesim/domain"
+	"github.com/syuparn/fridgesim/ent"
 	"github.com/syuparn/fridgesim/infrastructure"
 	"github.com/syuparn/fridgesim/pkg/config"
 	"github.com/syuparn/fridgesim/usecase"
@@ -18,6 +19,7 @@ func New() *do.Injector {
 	injector := do.New()
 
 	do.Provide(injector, newConfig)
+	do.Provide(injector, NewEntClient)
 	do.Provide(injector, newDB)
 	do.Provide(injector, newIngredientRepository)
 	do.Provide(injector, newListIngredientsInputPort)
@@ -47,9 +49,14 @@ func newDB(i *do.Injector) (*sql.DB, error) {
 	return sql.Open("postgres", source)
 }
 
-func newIngredientRepository(i *do.Injector) (domain.IngredientRepository, error) {
+func NewEntClient(i *do.Injector) (*ent.Client, error) {
 	db := do.MustInvoke[*sql.DB](i)
-	return infrastructure.NewIngredientRepository(db)
+	return infrastructure.NewClient(db), nil
+}
+
+func newIngredientRepository(i *do.Injector) (domain.IngredientRepository, error) {
+	client := do.MustInvoke[*ent.Client](i)
+	return infrastructure.NewIngredientRepository(client)
 }
 
 func newListIngredientsInputPort(i *do.Injector) (usecase.ListIngredientsInputPort, error) {

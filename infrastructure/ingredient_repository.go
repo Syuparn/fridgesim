@@ -2,11 +2,9 @@ package infrastructure
 
 import (
 	"context"
-	"database/sql"
 
 	"golang.org/x/xerrors"
 
-	entsql "entgo.io/ent/dialect/sql"
 	_ "github.com/lib/pq"
 	"github.com/samber/lo"
 
@@ -20,11 +18,7 @@ type ingredientRepository struct {
 
 var _ domain.IngredientRepository = new(ingredientRepository)
 
-func NewIngredientRepository(db *sql.DB) (domain.IngredientRepository, error) {
-
-	drv := entsql.OpenDB("postgres", db)
-	client := ent.NewClient(ent.Driver(drv))
-
+func NewIngredientRepository(client *ent.Client) (domain.IngredientRepository, error) {
 	return &ingredientRepository{
 		client: client,
 	}, nil
