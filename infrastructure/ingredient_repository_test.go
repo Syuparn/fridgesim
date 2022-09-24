@@ -95,7 +95,7 @@ func TestIngredientRepositoryUpsert(t *testing.T) {
 				Kind:   "carrot",
 				Amount: 2.0,
 			},
-			`INSERT INTO "ingredients" ("kind", "amount", "id") VALUES ($1, $2, $3) ON CONFLICT DO UPDATE SET "kind" = "excluded"."kind", "amount" = "excluded"."amount", "id" = "ingredients"."id" RETURNING "id"`,
+			`INSERT INTO "ingredients" ("kind", "amount", "id") VALUES ($1, $2, $3) ON CONFLICT ("id") DO UPDATE SET "kind" = "excluded"."kind", "amount" = "excluded"."amount", "id" = "ingredients"."id" RETURNING "id"`,
 			[]driver.Value{
 				"carrot", 2.0, "0123456789ABCDEFGHJKMNPQRS",
 			},

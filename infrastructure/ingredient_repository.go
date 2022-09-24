@@ -48,7 +48,7 @@ func (r *ingredientRepository) Upsert(ctx context.Context, ingredient *domain.In
 		SetID(string(ingredient.ID)).
 		SetKind(string(ingredient.Kind)).
 		SetAmount(float64(ingredient.Amount)).
-		OnConflict().
+		OnConflictColumns("id").
 		UpdateNewValues().
 		Exec(ctx)
 

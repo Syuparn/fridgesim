@@ -1,6 +1,6 @@
 package model
 
 type CreateIngredientRequest struct {
-	Kind   string  `json:"string"`
+	Kind   string  `json:"kind"`
 	Amount float64 `json:"amount"`
 }
