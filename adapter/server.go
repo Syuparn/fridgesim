@@ -1,13 +1,11 @@
 package adapter
 
 import (
-	"net/http"
-
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func NewServer() *echo.Echo {
+func NewServer(ctrl *Controller) *echo.Echo {
 	// Echo instance
 	e := echo.New()
 
@@ -16,16 +14,7 @@ func NewServer() *echo.Echo {
 	e.Use(middleware.Recover())
 
 	// Routes
-	e.GET("/", hello)
+	e.GET("/ingredients", ctrl.ListIngredients)
 
 	return e
-}
-
-type helloResponse struct {
-	Message string `json:"message"`
-}
-
-// Handler
-func hello(c echo.Context) error {
-	return c.JSON(http.StatusOK, &helloResponse{Message: "Hello, world!"})
 }

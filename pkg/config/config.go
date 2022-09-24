@@ -7,7 +7,11 @@ import (
 )
 
 type Specification struct {
-	Port int
+	Port       int
+	DBHost     string
+	DBPort     int
+	DBUser     string
+	DBPassword string
 }
 
 func New() (*Specification, error) {

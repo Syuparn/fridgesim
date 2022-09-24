@@ -15,10 +15,18 @@ func TestNew(t *testing.T) {
 		{
 			"environment variables is set to specification",
 			map[string]string{
-				"FRIDGESIM_PORT": "8080",
+				"FRIDGESIM_PORT":       "8080",
+				"FRIDGESIM_DBHOST":     "db",
+				"FRIDGESIM_DBPORT":     "5432",
+				"FRIDGESIM_DBUSER":     "postgres",
+				"FRIDGESIM_DBPASSWORD": "pass",
 			},
 			&Specification{
-				Port: 8080,
+				Port:       8080,
+				DBHost:     "db",
+				DBPort:     5432,
+				DBUser:     "postgres",
+				DBPassword: "pass",
 			},
 		},
 	}
@@ -46,15 +54,23 @@ func TestNewError(t *testing.T) {
 		envs map[string]string
 	}{
 		{
-			"environment variable is invalid",
+			"an environment variable is invalid",
 			map[string]string{
-				"FRIDGESIM_PORT": "invalid",
+				"FRIDGESIM_PORT":       "invalid",
+				"FRIDGESIM_DBHOST":     "db",
+				"FRIDGESIM_DBPORT":     "5432",
+				"FRIDGESIM_DBUSER":     "postgres",
+				"FRIDGESIM_DBPASSWORD": "pass",
 			},
 		},
 		{
-			"environment variable is empty",
+			"an environment variable is empty",
 			map[string]string{
-				"FRIDGESIM_PORT": "",
+				"FRIDGESIM_PORT":       "",
+				"FRIDGESIM_DBHOST":     "db",
+				"FRIDGESIM_DBPORT":     "5432",
+				"FRIDGESIM_DBUSER":     "postgres",
+				"FRIDGESIM_DBPASSWORD": "pass",
 			},
 		},
 	}

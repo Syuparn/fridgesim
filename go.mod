@@ -11,6 +11,7 @@ require (
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/samber/do v1.4.1
 	github.com/samber/lo v1.28.2
+	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
 )
