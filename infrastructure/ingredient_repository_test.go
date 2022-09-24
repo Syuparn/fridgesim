@@ -81,6 +81,59 @@ func TestIngredientRepositoryList(t *testing.T) {
 	}
 }
 
+func TestIngredientRepositoryGet(t *testing.T) {
+	columns := []string{"id", "kind", "amount"}
+
+	tests := []struct {
+		name     string
+		id       domain.IngredientID
+		query    string
+		mockRows [][]driver.Value
+		expected *domain.Ingredient
+	}{
+		{
+			"obtain an ingredient",
+			domain.IngredientID("0123456789ABCDEFGHJKMNPQRS"),
+			`SELECT DISTINCT "ingredients"."id", "ingredients"."kind", "ingredients"."amount" FROM "ingredients" WHERE "ingredients"."id" = $1`,
+			[][]driver.Value{
+				{"0123456789ABCDEFGHJKMNPQRS", "carrot", 2.0},
+			},
+			&domain.Ingredient{
+				ID:     "0123456789ABCDEFGHJKMNPQRS",
+				Kind:   "carrot",
+				Amount: 2.0,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db, mock, teardown := prepareDB(t)
+			defer teardown()
+
+			r, err := NewIngredientRepository(NewClient(db))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// mock
+			rows := sqlmock.NewRows(columns)
+			lo.ForEach(tt.mockRows, func(row []driver.Value, _ int) {
+				rows.AddRow(row...)
+			})
+			mock.ExpectQuery(regexp.QuoteMeta(tt.query)).
+				WillReturnRows(rows)
+
+			// exec
+			actual, err := r.Get(context.TODO(), tt.id)
+
+			// check
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
+
 func TestIngredientRepositoryUpsert(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -120,6 +173,52 @@ func TestIngredientRepositoryUpsert(t *testing.T) {
 
 			// exec
 			err = r.Upsert(context.TODO(), tt.ingredient)
+
+			// check
+			assert.NoError(t, err)
+		})
+	}
+}
+
+func TestIngredientRepositoryDelete(t *testing.T) {
+	tests := []struct {
+		name         string
+		ingredient   *domain.Ingredient
+		query        string
+		expectedArgs []driver.Value
+	}{
+		{
+			"delete an ingredient",
+			&domain.Ingredient{
+				ID:     "0123456789ABCDEFGHJKMNPQRS",
+				Kind:   "carrot",
+				Amount: 2.0,
+			},
+			`DELETE FROM "ingredients" WHERE "ingredients"."id" = $1`,
+			[]driver.Value{
+				"0123456789ABCDEFGHJKMNPQRS",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db, mock, teardown := prepareDB(t)
+			defer teardown()
+
+			r, err := NewIngredientRepository(NewClient(db))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// mock
+			// NOTE: fails if `ExpectExec()` is used. why? :thinking:
+			mock.ExpectExec(regexp.QuoteMeta(tt.query)).
+				WithArgs(tt.expectedArgs...).
+				WillReturnResult(sqlmock.NewResult(0, 1))
+
+			// exec
+			err = r.Delete(context.TODO(), tt.ingredient)
 
 			// check
 			assert.NoError(t, err)

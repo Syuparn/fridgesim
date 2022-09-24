@@ -16,6 +16,7 @@ func NewServer(ctrl *Controller) *echo.Echo {
 	// Routes
 	e.POST("/ingredients", ctrl.CreateIngredient)
 	e.GET("/ingredients", ctrl.ListIngredients)
+	e.DELETE("/ingredients/:ingredient", ctrl.DeleteIngredient)
 
 	return e
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/syuparn/fridgesim/domain"
 	"github.com/syuparn/fridgesim/ent"
+	ingredientschema "github.com/syuparn/fridgesim/ent/ingredient"
 )
 
 type ingredientRepository struct {
@@ -42,6 +43,23 @@ func (r *ingredientRepository) List(ctx context.Context) ([]*domain.Ingredient, 
 	}), nil
 }
 
+func (r *ingredientRepository) Get(ctx context.Context, id domain.IngredientID) (*domain.Ingredient, error) {
+	ingredient, err := r.client.Ingredient.
+		Query().
+		Where(ingredientschema.ID(string(id))).
+		Only(ctx)
+
+	if err != nil {
+		return nil, xerrors.Errorf("failed to get ingredient: %w", err)
+	}
+
+	return &domain.Ingredient{
+		ID:     domain.IngredientID(ingredient.ID),
+		Kind:   domain.IngredientKind(ingredient.Kind),
+		Amount: domain.IngredientAmount(ingredient.Amount),
+	}, nil
+}
+
 func (r *ingredientRepository) Upsert(ctx context.Context, ingredient *domain.Ingredient) error {
 	// use OnConflict for upsert
 	err := r.client.Ingredient.Create().
@@ -54,6 +72,16 @@ func (r *ingredientRepository) Upsert(ctx context.Context, ingredient *domain.In
 
 	if err != nil {
 		return xerrors.Errorf("failed to update ingredient: %w", err)
+	}
+
+	return nil
+}
+
+func (r *ingredientRepository) Delete(ctx context.Context, ingredient *domain.Ingredient) error {
+
+	_, err := r.client.Ingredient.Delete().Where(ingredientschema.ID(string(ingredient.ID))).Exec(ctx)
+	if err != nil {
+		return xerrors.Errorf("failed to delete ingredient: %w", err)
 	}
 
 	return nil

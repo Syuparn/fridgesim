@@ -25,6 +25,7 @@ func New() *do.Injector {
 	do.Provide(injector, newIngredientRepository)
 	do.Provide(injector, newCreateIngredientInputPort)
 	do.Provide(injector, newListIngredientsInputPort)
+	do.Provide(injector, newDeleteIngredientInputPort)
 	do.Provide(injector, newController)
 	do.Provide(injector, newServer)
 
@@ -76,12 +77,19 @@ func newListIngredientsInputPort(i *do.Injector) (usecase.ListIngredientsInputPo
 	return usecase.NewListIngredientsInputPort(ingredientRepository), nil
 }
 
+func newDeleteIngredientInputPort(i *do.Injector) (usecase.DeleteIngredientInputPort, error) {
+	ingredientRepository := do.MustInvoke[domain.IngredientRepository](i)
+	return usecase.NewDeleteIngredientInputPort(ingredientRepository), nil
+}
+
 func newController(i *do.Injector) (*adapter.Controller, error) {
 	createIngredientsInputPort := do.MustInvoke[usecase.CreateIngredientInputPort](i)
 	listIngredientsInputPort := do.MustInvoke[usecase.ListIngredientsInputPort](i)
+	deleteIngredientInputPort := do.MustInvoke[usecase.DeleteIngredientInputPort](i)
 	return adapter.NewController(
 		createIngredientsInputPort,
 		listIngredientsInputPort,
+		deleteIngredientInputPort,
 	), nil
 }
 
