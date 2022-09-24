@@ -10,7 +10,7 @@ import (
 var (
 	// IngredientsColumns holds the columns for the "ingredients" table.
 	IngredientsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString},
+		{Name: "id", Type: field.TypeString, Unique: true, Size: 26},
 		{Name: "kind", Type: field.TypeString},
 		{Name: "amount", Type: field.TypeFloat64},
 	}

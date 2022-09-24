@@ -81,6 +81,52 @@ func TestIngredientRepositoryList(t *testing.T) {
 	}
 }
 
+func TestIngredientRepositoryUpsert(t *testing.T) {
+	tests := []struct {
+		name         string
+		ingredient   *domain.Ingredient
+		query        string
+		expectedArgs []driver.Value
+	}{
+		{
+			"save an ingredient",
+			&domain.Ingredient{
+				ID:     "0123456789ABCDEFGHJKMNPQRS",
+				Kind:   "carrot",
+				Amount: 2.0,
+			},
+			`INSERT INTO "ingredients" ("kind", "amount", "id") VALUES ($1, $2, $3) ON CONFLICT DO UPDATE SET "kind" = "excluded"."kind", "amount" = "excluded"."amount", "id" = "ingredients"."id" RETURNING "id"`,
+			[]driver.Value{
+				"carrot", 2.0, "0123456789ABCDEFGHJKMNPQRS",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db, mock, teardown := prepareDB(t)
+			defer teardown()
+
+			r, err := NewIngredientRepository(NewClient(db))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// mock
+			// NOTE: fails if `ExpectExec()` is used. why? :thinking:
+			mock.ExpectQuery(regexp.QuoteMeta(tt.query)).
+				WithArgs(tt.expectedArgs...).
+				WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(tt.expectedArgs[2]))
+
+			// exec
+			err = r.Upsert(context.TODO(), tt.ingredient)
+
+			// check
+			assert.NoError(t, err)
+		})
+	}
+}
+
 func prepareDB(t *testing.T) (*sql.DB, sqlmock.Sqlmock, func()) {
 	db, mock, err := sqlmock.New()
 	if err != nil {

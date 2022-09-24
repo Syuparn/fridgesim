@@ -41,3 +41,20 @@ func (r *ingredientRepository) List(ctx context.Context) ([]*domain.Ingredient, 
 		}
 	}), nil
 }
+
+func (r *ingredientRepository) Upsert(ctx context.Context, ingredient *domain.Ingredient) error {
+	// use OnConflict for upsert
+	err := r.client.Ingredient.Create().
+		SetID(string(ingredient.ID)).
+		SetKind(string(ingredient.Kind)).
+		SetAmount(float64(ingredient.Amount)).
+		OnConflict().
+		UpdateNewValues().
+		Exec(ctx)
+
+	if err != nil {
+		return xerrors.Errorf("failed to update ingredient: %w", err)
+	}
+
+	return nil
+}

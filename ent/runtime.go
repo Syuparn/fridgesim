@@ -2,8 +2,33 @@
 
 package ent
 
+import (
+	"github.com/syuparn/fridgesim/ent/ingredient"
+	"github.com/syuparn/fridgesim/ent/schema"
+)
+
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	ingredientFields := schema.Ingredient{}.Fields()
+	_ = ingredientFields
+	// ingredientDescID is the schema descriptor for id field.
+	ingredientDescID := ingredientFields[0].Descriptor()
+	// ingredient.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	ingredient.IDValidator = func() func(string) error {
+		validators := ingredientDescID.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(id string) error {
+			for _, fn := range fns {
+				if err := fn(id); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 }
