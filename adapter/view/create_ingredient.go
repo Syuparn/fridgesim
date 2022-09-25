@@ -16,5 +16,5 @@ func CreateIngredient(c echo.Context, out *usecase.CreateIngredientOutputData) e
 		Amount: float64(out.Ingredient.Amount),
 	}
 
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusCreated, res)
 }

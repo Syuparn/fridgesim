@@ -21,6 +21,7 @@ func New() *do.Injector {
 	do.Provide(injector, newConfig)
 	do.Provide(injector, NewEntClient)
 	do.Provide(injector, newDB)
+	do.Provide(injector, newIDGenrator)
 	do.Provide(injector, newIngredientFactory)
 	do.Provide(injector, newIngredientRepository)
 	do.Provide(injector, newCreateIngredientInputPort)
@@ -57,8 +58,14 @@ func NewEntClient(i *do.Injector) (*ent.Client, error) {
 	return infrastructure.NewClient(db), nil
 }
 
+func newIDGenrator(i *do.Injector) (func() string, error) {
+	// return nil to use default random generator
+	return nil, nil
+}
+
 func newIngredientFactory(i *do.Injector) (domain.IngredientFactory, error) {
-	return domain.NewIngredientFacotry(nil), nil
+	idGenerator := do.MustInvoke[func() string](i)
+	return domain.NewIngredientFacotry(idGenerator), nil
 }
 
 func newIngredientRepository(i *do.Injector) (domain.IngredientRepository, error) {
