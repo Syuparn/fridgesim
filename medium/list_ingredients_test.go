@@ -1,7 +1,6 @@
 package medium
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -14,24 +13,35 @@ import (
 	"github.com/samber/do"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/syuparn/fridgesim/ent"
 	"github.com/syuparn/fridgesim/pkg/config"
 	"github.com/syuparn/fridgesim/pkg/di"
 )
 
-func TestCreateIngredient(t *testing.T) {
+func TestListIngredients(t *testing.T) {
 	setupConfig(t)
 
 	tests := []struct {
 		name           string
-		req            string
+		dbRows         []*dbSchema
 		expectedRes    string
 		expectedStatus int
 	}{
 		{
-			"create a new ingredient",
-			`{"kind":"carrot","amount":2}`,
-			`{"id": "0123456789ABCDEFGHJKMNPQRS", "kind": "carrot", "amount": 2}`,
-			http.StatusCreated,
+			"list ingredients",
+			[]*dbSchema{
+				{"0123456789ABCDEFGHJKMNPQRS", "carrot", 2.0},
+				{"1123456789ABCDEFGHJKMNPQRS", "cabbage", 0.5},
+			},
+			`
+			{
+				"ingredients": [
+					{"id": "0123456789ABCDEFGHJKMNPQRS", "kind": "carrot", "amount": 2},
+					{"id": "1123456789ABCDEFGHJKMNPQRS", "kind": "cabbage", "amount": 0.5}
+				]
+			}
+			`,
+			http.StatusOK,
 		},
 	}
 
@@ -41,11 +51,22 @@ func TestCreateIngredient(t *testing.T) {
 
 			// inject
 			newDBClient, teardown := mockDBInjector(t)
-			newIDGenerator := mockIDInjector("0123456789ABCDEFGHJKMNPQRS")
 			defer teardown()
 			injector := di.New()
 			do.Override(injector, newDBClient)
-			do.Override(injector, newIDGenerator)
+
+			// prepare rows
+			client := do.MustInvoke[*ent.Client](injector)
+			for _, row := range tt.dbRows {
+				err := client.Ingredient.Create().
+					SetID(row.ID).
+					SetKind(row.Kind).
+					SetAmount(row.Amount).
+					Exec(ctx)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
 
 			// run server
 			cfg := do.MustInvoke[*config.Specification](injector)
@@ -59,10 +80,8 @@ func TestCreateIngredient(t *testing.T) {
 			time.Sleep(1 * time.Second)
 
 			// request
-			res, err := http.Post(
+			res, err := http.Get(
 				fmt.Sprintf("http://localhost:%d/ingredients", cfg.Port),
-				"application/json",
-				bytes.NewBuffer([]byte(tt.req)),
 			)
 			if err != nil {
 				t.Fatal(err)

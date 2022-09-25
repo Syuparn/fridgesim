@@ -48,3 +48,9 @@ func setupConfig(t *testing.T) {
 	t.Setenv("FRIDGESIM_DBUSER", "postgres")
 	t.Setenv("FRIDGESIM_DBPASSWORD", "pass")
 }
+
+type dbSchema struct {
+	ID     string
+	Kind   string
+	Amount float64
+}
